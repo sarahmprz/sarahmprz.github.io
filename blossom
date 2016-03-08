@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Blooming Vancouver</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v2.2.3/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v2.2.3/mapbox.css' rel='stylesheet' />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
+</head>
+<body>
+<style>
+article {
+  position:absolute;
+  top:0;
+  right:0;
+  bottom:0px;
+  left:0;
+  overflow:auto;
+  }
+.quiet {
+  color:rgba(0,0,0,0.5);
+  }
+.scroll {
+  display:block;
+  text-align:center;
+  }
+.sections {
+  background:rgba(255,255,255,0.5);
+  width:240px;
+  }
+section {
+  padding:20px;
+  color:rgba(0,0,0,0.5);
+  -webkit-transition:background 500ms, color 500ms;
+          transition:background 500ms, color 500ms;
+  }
+section.active {
+  background:#fff;
+  color:#e1b09c;
+  }
+</style>
+<div id='map'></div>
+
+<article id='narrative'>
+  <div class='sections prose'>
+    <section id='cover' class='cover active'>
+      <h2>Vancouver in Bloom</h2>
+      <p>Spring in Vancouver is usually pretty miserable. The city’s trees make up for the pissing rain by unfolding wonderful blooms week by week. 
+       
+        <img src=http://40.media.tumblr.com/d12ab11e9dab841c598529f6a14074b3/tumblr_n61pqpsxnz1ty5nngo1_r1_1280.jpg height="100" width="200"></p>
+      <small class='scroll quiet'>Scroll &#x25BE;</small>
+    </section>
+    <section id='w11'>
+      <h3>Mount Pleasant - West 11th</h3>
+      <p>On 11th avenue there’s a Magnolia tree that usually blooms before all others. It’s massive, and sits in the sun most of the day. 
+      
+        <img src=https://postmediavancouversun.files.wordpress.com/2012/04/057.jpg height="100" width="200">
+        
+      </p>
+    </section>
+    <section id='woodland'>
+      <h3>10th avenue Bike Route</h3>
+      <p>Between Clark and Commercial tall chestnut trees cast long shades. They are accompanied by beech trees, and every year in May (or earlier, cos yknow climate change) the trees cover the ground with white and pink blossoms. Last summer the cottonwood trees were cut down.</p>
+    </section>
+        <section id='Cypress'>
+      <h3>Cypress</h3>
+      <p>This street is great, but such a hazard if the cherry blossoms have started to fall, and Vancouver is serving you rain (and you’re on a bike).</p>
+    </section>
+    <section id='W8'>
+      <h3>West 8th Bike Route</h3>
+      <p>Right by my workplace, cherry trees and plum trees line the street with 7 shades of pink. It makes my commute all the more pleasant</p>
+    </section>
+    </section>
+    <section id='telegraph'>
+      <h3>16th avenue</h3>
+      <p>There aren’t that many cherry trees on 16th, but the one that matters the most is the one in front of your office window</p>
+    </section>
+    <section id='telegraph'>
+      <h3>16th avenue</h3>
+      <p>There aren’t that many cherry trees on 16th, but the one that matters the most is the one in front of your office window</p>
+    </section>
+    
+      <small class='colophon'>
+        Adapted from <a href='https://www.mapbox.com/tutorial-sherlock/'>Mapbox’ Sherlock Tutorial</a>
+      </small>
+    </section>
+  </div>
+</article>
+
+<script>
+L.mapbox.accessToken = 'pk.eyJ1Ijoic2FyYWhtcHJ6IiwiYSI6InRVbVB0Q1UifQ.i0QaaEN1j9uf0xy4P6APyQ';
+// In this case, we just hardcode data into the file. This could be dynamic.
+// The important part about this data is that the 'id' property matches
+// the HTML above - that's how we figure out how to link up the
+// map and the data.
+var places = { type: 'FeatureCollection', features: [
+{ geometry: { type: "Point", coordinates: [-123.12073750000002, 49.2827291] },
+  properties: { id: "cover", zoom: 9 }, type: 'Feature' },
+{ geometry: { type: "Point", coordinates: [-123.10997120000002, 49.26098019999999] },
+  properties: { id: "w11" }, type: 'Feature' },
+{ geometry: { type: "Point", coordinates: [-123.073826, 49.26133] },
+  properties: { id: "woodland" }, type: 'Feature' },
+{ geometry: { type: "Point", coordinates: [-123.14813375473022,49.26465407820538] },
+  properties: { id: "Cypress" }, type: 'Feature' },
+{ geometry: { type: "Point", coordinates: [-123.179007, 49.264275] },
+  properties: { id: "W8" }, type: 'Feature' },
+{ geometry: { type: "Point", coordinates: [-0.18335806, 51.49439521] },
+  properties: { id: "gloucester" }, type: 'Feature' },
+{ geometry: { type: "Point", coordinates: [-0.19684993, 51.5033856] },
+  properties: { id: "caulfield-gardens" }, type: 'Feature' },
+{ geometry: { type: "Point", coordinates: [-0.10669358, 51.51433123] },
+  properties: { id: "telegraph" }, type: 'Feature' },
+{ geometry: { type: "Point", coordinates: [-0.12416858, 51.50779757] },
+  properties: { id: "charing-cross" }, type: 'Feature' }
+]};
+
+var map = L.mapbox.map('map', 'mapbox.dark', {
+    zoomControl: false
+});
+
+var placesLayer = L.mapbox.featureLayer(places)
+    .addTo(map);
+
+// Ahead of time, select the elements we'll need -
+// the narrative container and the individual sections
+var narrative = document.getElementById('narrative'),
+    sections = narrative.getElementsByTagName('section'),
+    currentId = '';
+
+setId('cover');
+
+function setId(newId) {
+    // If the ID hasn't actually changed, don't do anything
+    if (newId === currentId) return;
+    // Otherwise, iterate through layers, setting the current
+    // marker to a different color and zooming to it.
+    placesLayer.eachLayer(function(layer) {
+        if (layer.feature.properties.id === newId) {
+            map.setView(layer.getLatLng(), layer.feature.properties.zoom || 13);
+            layer.setIcon(L.mapbox.marker.icon({
+                'marker-color': '#e1b09c'
+            }));
+        } else {
+            layer.setIcon(L.mapbox.marker.icon({
+                'marker-color': '#404040'
+            }));
+        }
+    });
+    // highlight the current section
+    for (var i = 0; i < sections.length; i++) {
+        sections[i].className = sections[i].id === newId ? 'active' : '';
+    }
+    // And then set the new id as the current one,
+    // so that we know to do nothing at the beginning
+    // of this function if it hasn't changed between calls
+    currentId = newId;
+}
+
+// If you were to do this for real, you would want to use
+// something like underscore's _.debounce function to prevent this
+// call from firing constantly.
+narrative.onscroll = function(e) {
+    var narrativeHeight = narrative.offsetHeight;
+    var newId = currentId;
+    // Find the section that's currently scrolled-to.
+    // We iterate backwards here so that we find the topmost one.
+    for (var i = sections.length - 1; i >= 0; i--) {
+        var rect = sections[i].getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= narrativeHeight) {
+            newId = sections[i].id;
+        }
+    };
+    setId(newId);
+};
+</script>
+</body>
+</html>
